@@ -14,6 +14,7 @@ import pandas as pd
 import sqlalchemy
 
 from datetime import datetime
+from dir_helpers import create_dir
 from get_sql_files import get_sql_objs
 from outlook_smtp_funcs import create_email, create_server
 from sqlalchemy_base import MySqlDb
@@ -23,14 +24,15 @@ from sqlalchemy_base import MySqlDb
 datestamp = datetime.strftime(datetime.now(), "%Y%m%d")
 weekstamp = datetime.strftime(datetime.now(), "%A, %b %d %Y")
 cwd = os.getcwd()
-err_path = cwd + '//ERRORLOG'
+err_path = create_dir(cwd + '//ERRORLOG')
 err_file_path = err_path + '//errorlog.txt'
-results_path = cwd + '//RESULTS'
+results_path = create_dir(cwd + '//RESULTS')
+email_info_path = create_dir(cwd + '//EMAILINFO')
 results = []
 
-# get email info from csv
+# get email info from csv into dict
 email_dict = pd.read_csv(
-    cwd + '//EMAILINFO//emailinfo.csv'
+    email_info_path + '//emailinfo.csv'
 ).to_dict(
     orient='records'
 )[0]
