@@ -16,7 +16,7 @@ import sqlalchemy
 from datetime import datetime
 from get_sql_files import get_sql_objs
 from outlook_smtp_funcs import create_email, create_server
-from sqlalchemy_class import MySqlDb
+from sqlalchemy_base import MySqlDb
 
 
 # define file-related vars
