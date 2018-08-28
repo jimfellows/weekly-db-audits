@@ -63,7 +63,6 @@ for obj in sql_objs:
 db = MySqlDb()
 with db.open_cnxn():
     # loop through objects and run queries
-    for query in sql_objs:
         try:
             start = datetime.now()
             print('\nQuerying ' + query.alias + '...')
