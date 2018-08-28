@@ -3,4 +3,4 @@ The goal of this project is to create a python script that grabs all SQL files i
 
 As of now SQL files are not included in this repository.  This script serves as a shell for the user to set up the desired db connections and create queries to use as needed.
 
-In addition to package installation from the requirements.txt file and creation of DB connection(s) and SQL files, the user will also need a valid email address, with appropriate info filled out in the emailinfo.csv.
+In addition to package installation from the requirements.txt file and creation of DB connection(s) and SQL files, the user will also need a valid email address, with appropriate info filled out in the emailinfo.csv.  The windows batch (.bat) file will need to be updated to set the current working directory of the script as well.
