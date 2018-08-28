@@ -61,53 +61,51 @@ for obj in sql_objs:
 
 # initiate Sqlalchemy object
 db = MySqlDb()
-db.open_cnxn()
+# loop through objects and run queries; with statement ensure cnxn closure
+with db.open_cnxn():
+    for query in sql_objs:
+        try:
+            start = datetime.now()
+            print('\nQuerying ' + query.alias + '...')
+            db.query = query.query_str
+            db.execute_query()
+            query.query_time = datetime.now() - start
+            query.success = True
+            query.results = db.results
+            if query.results.empty:
+                body_string = body_string + '\n' + query.alias + '\nRows returned: 0' + '\nQuery Time: ' \
+                              + str(query.query_time) + '\n'
+            else:
+                body_string = body_string + '\n' + query.alias + '\nRows returned: ' + str(query.results.shape[0]) \
+                              + '\nQuery Time: ' + str(query.query_time) + '\n'
 
-# loop through objects and run queries
-for query in sql_objs:
-    try:
-        start = datetime.now()
-        print('\nQuerying ' + query.alias + '...')
-        db.query = query.query_str
-        db.execute_query()
-        query.query_time = datetime.now() - start
-        query.success = True
-        query.results = db.results
-        if query.results.empty:
-            body_string = body_string + '\n' + query.alias + '\nRows returned: 0' + '\nQuery Time: ' \
-                          + str(query.query_time) + '\n'
-        else:
-            body_string = body_string + '\n' + query.alias + '\nRows returned: ' + str(query.results.shape[0]) \
-                          + '\nQuery Time: ' + str(query.query_time) + '\n'
+            print(query.alias + ' complete, ' + str(db.results.shape[0]) + ' rows found.\nQuery Time: '
+                  + str(query.query_time))
 
-        print(query.alias + ' complete, ' + str(db.results.shape[0]) + ' rows found.\nQuery Time: '
-              + str(query.query_time))
+        except (cx_Oracle.DatabaseError, sqlalchemy.exc.DatabaseError) as err:
+            print('Query failed for ' + query.alias + '\nQuery Time(s): 0:00:00')
+            print(str(err))
+            query.success = False
+            error_str = '\n\n' + error_str + query.alias + ' failed, see error below:\n\n' + str(err) + '\n'
+            body_string = body_string + '\n' + query.alias + '\nRows returned: ERROR PLEASE REVIEW SQL QUERY.' \
+                          + '\nQuery Time: N/A\n'
+            pass
 
-    except (cx_Oracle.DatabaseError, sqlalchemy.exc.DatabaseError) as err:
-        print('Query failed for ' + query.alias + '\nQuery Time(s): 0:00:00')
-        print(str(err))
-        query.success = False
-        error_str = '\n\n' + error_str + query.alias + ' failed, see error below:\n\n' + str(err) + '\n'
-        body_string = body_string + '\n' + query.alias + '\nRows returned: ERROR PLEASE REVIEW SQL QUERY.' \
-                      + '\nQuery Time: N/A\n'
-        pass
+        if not query.results.empty:
+            path = results_path + '//' + query.name + '.csv'
+            query.results.to_csv(
+                path,
+                index=False
+            )
+            # check file size in mbs; outlook can't send attachments over 10mbs
+            fsize = os.path.getsize(path)*0.000001
+            print(fsize, type(fsize))
+            if fsize > 10.0:
+                body_string = body_string + '\n' + 'File size ' + str(fsize) + 'mb too large for Outlook, refer to ' \
+                              + results_path
+            else:
+                results.append(path)
 
-    if not query.results.empty:
-        path = results_path + '//' + query.name + '.csv'
-        query.results.to_csv(
-            path,
-            index=False
-        )
-        # check file size in mbs; outlook can't send attachments over 10mbs
-        fsize = os.path.getsize(path)*0.000001
-        print(fsize, type(fsize))
-        if fsize > 10.0:
-            body_string = body_string + '\n' + 'File size ' + str(fsize) + 'mb too large for Outlook, refer to ' \
-                          + results_path
-        else:
-            results.append(path)
-
-db.cnxn.close()
 db.dispose_engine()
 
 if error_str:
