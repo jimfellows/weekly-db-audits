@@ -64,6 +64,7 @@ class SqlALchemyCore(object):
         """
         self.cnxn = self.engine.connect()
         print(self.__class__.__name__ + ' SQL Alchemy connection opened.')
+        return self.cnxn
 
     def close_cnxn(self):
         """

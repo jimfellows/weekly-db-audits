@@ -61,9 +61,8 @@ for obj in sql_objs:
 
 # initiate Sqlalchemy object
 db = MySqlDb()
-# loop through objects and run queries; with statement ensure cnxn closure
 with db.open_cnxn():
-    for query in sql_objs:
+    # loop through objects and run queries
         try:
             start = datetime.now()
             print('\nQuerying ' + query.alias + '...')
